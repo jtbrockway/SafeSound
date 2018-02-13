@@ -1,5 +1,7 @@
+'''
 #SEE THIS LINK
 #https://stackoverflow.com/questions/14817210/using-buttons-in-tkinter-to-navigate-to-different-pages-of-the-applicationrint("hi")
+'''
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
