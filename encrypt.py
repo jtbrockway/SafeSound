@@ -4,7 +4,7 @@ import pyaes
 def get_user_hash(username, password):
     user = username+password
     user = user.encode('utf-8')
-    if (length(user) != 32):
+    if (len(user) != 32):
         return ''
     aes = pyaes.AESModeOfOperationCTR(user)
     key = aes.encrypt(user)
