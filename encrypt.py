@@ -2,13 +2,22 @@ import pyaes
 
 
 def get_user_hash(username, password):
+    username = adjust(username)
+    password = adjust(password)
     user = username+password
     user = user.encode('utf-8')
-    if (len(user) != 32):
-        return ''
     aes = pyaes.AESModeOfOperationCTR(user)
     key = aes.encrypt(user)
     return key
+
+def adjust(str):
+    leng = len(str)
+    if leng < 16:
+        str = str.zfill(16)
+    elif leng > 16:
+        str = str[:16]
+    return str
+
 
 '''
     # username total must equal 256 bits (32 bytes/characters), encoded
