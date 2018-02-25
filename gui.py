@@ -4,6 +4,8 @@
 '''
 import tkinter as tk
 from tkinter import *
+from tkinter import filedialog
+import encrypt as enc
 
 global appP
 
@@ -14,10 +16,30 @@ class Page(tk.Frame):
         self.lift()
 
 class appPage(Page):
-   def __init__(self, *args, **kwargs):
-       Page.__init__(self, *args, **kwargs)
-       label = tk.Label(self, text="This is page 2")
-       label.pack(side="top", fill="both", expand=True)
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+
+        playFile = ""
+        def upload():
+            playFile = filedialog.askopenfilename()
+            print(playFile)
+
+        uploadButton = tk.Button(self, text = "Upload", command = upload)
+        uploadButton.pack(side="top")
+
+        def play():
+            print("Gotta Play")
+
+        uploadButton = tk.Button(self, text = "Play", command = play)
+        uploadButton.pack(side="top")
+
+        def edit():
+            print("Gotta Edit")
+
+        uploadButton = tk.Button(self, text = "Edit Squad", command = edit)
+        uploadButton.pack(side="top")
+
+
 
 class loginPage(Page):
     def __init__(self, *args, **kwargs):
@@ -34,11 +56,15 @@ class loginPage(Page):
       passLabel.pack(side="top")
       passEntry = tk.Entry(self, text='', textvariable=password, show="*", width=16)
       passEntry.pack(side="top")
+
       def login():
         usern = userEntry.get()
         passw = passEntry.get()
-        if(usern == "sah" and passw == "dude"):
-          viewHandler.showApp()
+
+        entered = enc.get_user_hash(usern, passw)
+        if(entered == enc.get_user_hash("sah", "dude")):
+            viewHandler.showApp()
+
       loginButton = tk.Button(self, text = "Login", command = login)
       loginButton.pack(side="top")
 
