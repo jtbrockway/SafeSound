@@ -19,28 +19,47 @@ class appPage(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
 
-        playFile = ""
+        scrollbar = tk.Scrollbar(self, orient="vertical")
+
+        songBox = tk.Listbox(self, yscrollcommand = scrollbar.set)
+        '''songBox.insert("end", "one")
+        songBox.insert("end", "two")
+        songBox.insert("end", "three")'''
+        for i in range(0, 30):
+            songBox.insert("end", i)
+
+        scrollbar.config(command=songBox.yview)
+        #scrollbar.pack(side="right", fill="y")
+        scrollbar.grid(row=0,column=2, rowspan = 3)
+        #songBox.pack(side="bottom", fill="both", expand=True)
+        songBox.grid(row=0, column=0, rowspan = 3, columnspan = 2)
+
         def upload():
             playFile = filedialog.askopenfilename()
             print(playFile)
 
         uploadButton = tk.Button(self, text = "Upload", command = upload)
-        uploadButton.pack(side="top")
-
-        def play():
-            print("Gotta Play")
-
-        uploadButton = tk.Button(self, text = "Play", command = play)
-        uploadButton.pack(side="top")
+        #uploadButton.pack(side="top", fill = "x", anchor = "w")
+        uploadButton.grid(row=4, column=2, sticky = N+S+E+W)
 
         def edit():
             print("Gotta Edit")
 
-        uploadButton = tk.Button(self, text = "Edit Squad", command = edit)
-        uploadButton.pack(side="top")
+        editButton = tk.Button(self, text = "Edit Squad", command = edit)
+        #editButton.pack(side="top", fill = "x", anchor = "e")
+        editButton.grid(row=5,column=2, sticky = N+S+E+W)
 
+        playFile = ""
+        def play():
+            songSel = songBox.curselection()
+            song = songBox.get(songSel[0])
+            print(song)
 
+        playButton = tk.Button(self, text = "Play", command = play)
+        #playButton.pack(side="bottom")
+        playButton.grid(row=4, column=0, rowspan = 2, columnspan = 2, sticky = N+S+E+W)
 
+        
 class loginPage(Page):
     def __init__(self, *args, **kwargs):
       Page.__init__(self, *args, **kwargs)
