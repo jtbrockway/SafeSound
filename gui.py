@@ -6,10 +6,14 @@ import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
 import encrypt as enc
-from PIL import ImageTk, Image
+import mongodrive2 as db
 
 global appP
 global editP
+
+uri = 'mongodb://rondell:weasley@d125198.mla.com:25198/squaduga'
+client = pymongo.MongoClient(uri)
+db = client.get_default_database()
 
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
@@ -71,11 +75,6 @@ class loginPage(Page):
     def __init__(self, *args, **kwargs):
       Page.__init__(self, *args, **kwargs)
 
-      path = "safeSoundImage.jpg"
-      img = ImageTk.PhotoImage(Image.open(path))
-      panel = tk.Label(self, image = img)
-      panel.pack(side="top")
-
       username = StringVar(root)
       password = StringVar(root)
 
@@ -94,7 +93,7 @@ class loginPage(Page):
         passw = passEntry.get()
 
         entered = enc.get_user_hash(usern, passw)
-        if(entered == enc.get_user_hash("sah", "dude")):
+        if(db.valid_login(usern, passw)):
             viewHandler.showApp()
 
       loginButton = tk.Button(self, text = "Login", command = login)

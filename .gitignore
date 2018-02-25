@@ -1,6 +1,6 @@
 ._*
 *.pyc
-.swp
+*.swp
 .py.swp
 .gui.py.swp
 *.DS*
