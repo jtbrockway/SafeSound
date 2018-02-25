@@ -1,5 +1,6 @@
+._*
 *.pyc
 .swp
 .py.swp
 .gui.py.swp
-.DS*
+*.DS*

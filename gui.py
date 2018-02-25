@@ -6,8 +6,10 @@ import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
 import encrypt as enc
+from PIL import ImageTk, Image
 
 global appP
+global editP
 
 class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
@@ -15,9 +17,40 @@ class Page(tk.Frame):
     def show(self):
         self.lift()
 
+class editPage(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+
+
 class appPage(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
+
+        def upload():
+            playFile = filedialog.askopenfilename()
+            print(playFile)
+
+        uploadButton = tk.Button(self, text = "Upload", command = upload)
+        uploadButton.pack(side="top", fill = "x", anchor = "w")
+        #uploadButton.grid(row=4, column=2, sticky = N+S+E+W)
+
+        def edit():
+            viewHandler.showEdit()
+
+        editButton = tk.Button(self, text = "Edit Squad", command = edit)
+        editButton.pack(side="top", fill = "x", anchor = "e")
+        #editButton.grid(row=5,column=2, sticky = N+S+E+W)
+
+        playFile = ""
+        def play():
+            songSel = songBox.curselection()
+            song = songBox.get(songSel[0])
+            print(song)
+
+
+        playButton = tk.Button(self, text = "Play", command = play)
+        playButton.pack(side="bottom")
+        #playButton.grid(row=4, column=0, rowspan = 2, columnspan = 2, sticky = N+S+E+W)
 
         scrollbar = tk.Scrollbar(self, orient="vertical")
 
@@ -29,40 +62,20 @@ class appPage(Page):
             songBox.insert("end", i)
 
         scrollbar.config(command=songBox.yview)
-        #scrollbar.pack(side="right", fill="y")
-        scrollbar.grid(row=0,column=2, rowspan = 3)
-        #songBox.pack(side="bottom", fill="both", expand=True)
-        songBox.grid(row=0, column=0, rowspan = 3, columnspan = 2)
-
-        def upload():
-            playFile = filedialog.askopenfilename()
-            print(playFile)
-
-        uploadButton = tk.Button(self, text = "Upload", command = upload)
-        #uploadButton.pack(side="top", fill = "x", anchor = "w")
-        uploadButton.grid(row=4, column=2, sticky = N+S+E+W)
-
-        def edit():
-            print("Gotta Edit")
-
-        editButton = tk.Button(self, text = "Edit Squad", command = edit)
-        #editButton.pack(side="top", fill = "x", anchor = "e")
-        editButton.grid(row=5,column=2, sticky = N+S+E+W)
-
-        playFile = ""
-        def play():
-            songSel = songBox.curselection()
-            song = songBox.get(songSel[0])
-            print(song)
-
-        playButton = tk.Button(self, text = "Play", command = play)
-        #playButton.pack(side="bottom")
-        playButton.grid(row=4, column=0, rowspan = 2, columnspan = 2, sticky = N+S+E+W)
-
+        scrollbar.pack(side="right", fill="y")
+        #scrollbar.grid(row=0,column=2, rowspan = 3)
+        songBox.pack(side="bottom", fill="both", expand=True)
+        #songBox.grid(row=0, column=0, rowspan = 3, columnspan = 2)
         
 class loginPage(Page):
     def __init__(self, *args, **kwargs):
       Page.__init__(self, *args, **kwargs)
+
+      path = "safeSoundImage.jpg"
+      img = ImageTk.PhotoImage(Image.open(path))
+      panel = tk.Label(self, image = img)
+      panel.pack(side="top")
+
       username = StringVar(root)
       password = StringVar(root)
 
@@ -91,8 +104,11 @@ class viewHandler(tk.Frame):
     def __init__(self, *args, **kwargs):
         tk.Frame.__init__(self, *args, **kwargs)
         global appP
+        global editP
+
         logP = loginPage(self)
         appP = appPage(self)
+        editP = editPage(self)
 
         buttonframe = tk.Frame(self)
         container = tk.Frame(self)
@@ -101,12 +117,17 @@ class viewHandler(tk.Frame):
 
         logP.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         appP.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        editP.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
         logP.show()
 
     def showApp():
-      global appP
-      appP.show()
+        global appP
+        appP.show()
+
+    def showEdit():
+        global editP
+        editP.show()
 
 if __name__ == "__main__":
     root = tk.Tk()
