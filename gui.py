@@ -122,6 +122,7 @@ class viewHandler(tk.Frame):
 
     def showApp(self):
         global appP
+        print("pls show")
         appP.show()
 
     def showEdit():
