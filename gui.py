@@ -7,10 +7,15 @@ from Tkinter import *
 import tkFileDialog as filedialog
 import encrypt as enc
 import mongodrive2 as dab
+#import smove2 as updown
 import pymongo
 
 global appP
 global editP
+global viewhandler
+global username
+global password
+global key
 
 uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga"
 client = pymongo.MongoClient(uri)
@@ -25,21 +30,56 @@ class Page(tk.Frame):
 class editPage(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
+        global viewhandler
+
+        def back():
+            viewHandler.showApp(viewhandler)
+
+        backButton = tk.Button(self, text="Back", command = back)
+        backButton.pack(side="top", fill = "x", anchor = "w")
+
+        squadLabel = tk.Label(self, text="Squad Member: (Enter first and last name)")
+        squadLabel.pack()
+        squadEntry = tk.Entry(self, text='', width=16)
+        squadEntry.pack()
+
+        def addSquad():
+            name = squadEntry.get()
+            print("add " + name + " to squad")
+
+        def removeSquad():
+            name = squadEntry.get()
+            print("remove " + name + " from squad")
+
+        addButton = tk.Button(self, text="Add member", command = addSquad)
+        addButton.pack(side="top", fill = "x", anchor = "w")
+
+        removeButton = tk.Button(self, text="Back", command = removeSquad)
+        removeButton.pack(side="top", fill = "x", anchor = "w")
 
 class appPage(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
+        global viewhandler
+        global key
+
+        songLabel = tk.Label(self, text='Enter name of song to be uploaded')
+        songLabel.pack(side='top')
+        songEntry = tk.Entry(self, width=25)
+        songEntry.pack(side='top')
 
         def upload():
             playFile = filedialog.askopenfilename()
-            print(playFile)
+            encryptFile = enc.encrypt_song(playFile, key)
+
+            songName = songEntry.get()
 
         uploadButton = tk.Button(self, text = "Upload", command = upload)
         uploadButton.pack(side="top", fill = "x", anchor = "w")
         #uploadButton.grid(row=4, column=2, sticky = N+S+E+W)
 
         def edit():
-            viewHandler.showEdit()
+            viewHandler.showEdit(viewhandler)
 
         editButton = tk.Button(self, text = "Edit Squad", command = edit)
         editButton.pack(side="top", fill = "x", anchor = "e")
@@ -75,26 +115,33 @@ class loginPage(Page):
     def __init__(self, *args, **kwargs):
       Page.__init__(self, *args, **kwargs)
 
+      global viewhandler
+      global username
+      global password
+      global key
+
       username = StringVar(root)
       password = StringVar(root)
 
       userLabel = tk.Label(self, text="Username:")
       userLabel.pack(side="top")
-      userEntry = tk.Entry(self, text='', textvariable=username, width=16)
+      userEntry = tk.Entry(self, text='', width=16)
       userEntry.pack(side="top")
 
       passLabel = tk.Label(self, text="Password:")
       passLabel.pack(side="top")
-      passEntry = tk.Entry(self, text='', textvariable=password, show="*", width=16)
+      passEntry = tk.Entry(self, text='', show="*", width=16)
       passEntry.pack(side="top")
 
       def login():
         usern = userEntry.get()
         passw = passEntry.get()
 
-        entered = enc.get_user_hash(usern, passw)
+        key = enc.get_user_hash(usern, passw)
         if(dab.valid_login(usern, passw)):
-            viewHandler.showApp(viewHandler())
+            username = usern
+            password = passw
+            viewHandler.showApp(viewhandler)
 
       loginButton = tk.Button(self, text = "Login", command = login)
       loginButton.pack(side="top")
@@ -102,8 +149,11 @@ class loginPage(Page):
 class viewHandler(tk.Frame):
     def __init__(self, *args, **kwargs):
         tk.Frame.__init__(self, *args, **kwargs)
+        global viewhandler
         global appP
         global editP
+
+        viewhandler = self
 
         logP = loginPage(self)
         appP = appPage(self)
@@ -122,10 +172,9 @@ class viewHandler(tk.Frame):
 
     def showApp(self):
         global appP
-        print("pls show")
         appP.show()
 
-    def showEdit():
+    def showEdit(self):
         global editP
         editP.show()
 

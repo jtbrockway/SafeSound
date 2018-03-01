@@ -57,8 +57,8 @@ def get_credentials():
     return credentials
 
 ##### credentials check run globally #####
-credentials = get_credentials()
-#credentials = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', SCOPES)
+#credentials = get_credentials()
+credentials = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', SCOPES)
 http = credentials.authorize(httplib2.Http())
 service = discovery.build('drive', 'v3', http=http)
 
@@ -133,7 +133,7 @@ def upload(song_name, file_path):
         print('Files:')
         for item in items:
             print('{0} ({1})'.format(item['name'], item['id']))
-
+'''
 def main():
     results = service.files().list(fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
@@ -152,3 +152,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+'''
