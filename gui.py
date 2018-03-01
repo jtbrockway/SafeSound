@@ -6,12 +6,13 @@ import tkinter as tk
 from tkinter import *
 from tkinter import filedialog
 import encrypt as enc
-import mongodrive2 as db
+import mongodrive2 as dab
+import pymongo
 
 global appP
 global editP
 
-uri = 'mongodb://rondell:weasley@d125198.mla.com:25198/squaduga'
+uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga"
 client = pymongo.MongoClient(uri)
 db = client.get_default_database()
 
@@ -24,7 +25,6 @@ class Page(tk.Frame):
 class editPage(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-
 
 class appPage(Page):
     def __init__(self, *args, **kwargs):
@@ -93,7 +93,7 @@ class loginPage(Page):
         passw = passEntry.get()
 
         entered = enc.get_user_hash(usern, passw)
-        if(db.valid_login(usern, passw)):
+        if(dab.valid_login(usern, passw)):
             viewHandler.showApp()
 
       loginButton = tk.Button(self, text = "Login", command = login)

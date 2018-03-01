@@ -36,7 +36,7 @@ SEED_DATA = [
 
 ### Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
 
-uri = '' 
+uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga" 
 
 ###############################################################################
 # main
@@ -47,7 +47,7 @@ db = client.get_default_database() ## db as a global reference to the database
 
 def valid_login(usern, passw):
     cursor = db.ugas.find({'artist': usern})
-    if cursor is not None: ## Not sure if this is what it will be.
+    while cursor is not None: ## Not sure if this is what it will be.
         if passw==cursor.next()['pass']:
             print('Success! Logged in as \'%s\'' % (usern))
             return True
