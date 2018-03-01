@@ -2,7 +2,7 @@ import sys
 import pymongo
 
 ### Create seed data
-
+'''
 SEED_DATA = [
     {
         'artist': 'jacko',
@@ -33,7 +33,7 @@ SEED_DATA = [
         'uploaded':[]
     }
 ]
-
+'''
 ### Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
 
 uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga" 
@@ -186,7 +186,7 @@ def update_dl_history(username):
     return
 
 
-
+'''
 def main(args):
 
     
@@ -244,3 +244,4 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
+'''

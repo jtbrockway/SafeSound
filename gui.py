@@ -2,9 +2,9 @@
 #SEE THIS LINK
 #https://stackoverflow.com/questions/14817210/using-buttons-in-tkinter-to-navigate-to-different-pages-of-the-applicationrint("hi")
 '''
-import tkinter as tk
-from tkinter import *
-from tkinter import filedialog
+import Tkinter as tk
+from Tkinter import *
+import tkFileDialog as filedialog
 import encrypt as enc
 import mongodrive2 as dab
 import pymongo
@@ -94,7 +94,7 @@ class loginPage(Page):
 
         entered = enc.get_user_hash(usern, passw)
         if(dab.valid_login(usern, passw)):
-            viewHandler.showApp()
+            viewHandler.showApp(viewHandler())
 
       loginButton = tk.Button(self, text = "Login", command = login)
       loginButton.pack(side="top")
@@ -120,7 +120,7 @@ class viewHandler(tk.Frame):
 
         logP.show()
 
-    def showApp():
+    def showApp(self):
         global appP
         appP.show()
 
