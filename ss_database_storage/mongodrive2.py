@@ -10,7 +10,7 @@ SEED_DATA = [
         'pass': 'malfoy',
         '#key': '',
         'squad': ['sierrius', 'rondell'],
-        'avail_songs':set(),
+        'avail_songs':[],
         'downloaded':[],
         'uploaded':[]
     },
@@ -20,7 +20,7 @@ SEED_DATA = [
         'pass': 'black',
         '#key' : '',
         'squad': ['rondell', 'howwy'],
-        'avail_songs':set(),
+        'avail_songs':[],
         'downloaded':[],
         'uploaded':[]
 
@@ -31,7 +31,7 @@ SEED_DATA = [
         'pass': 'weasley',
         '#key': '',
         'squad': ['howwy', 'jacko', 'sierrius'],
-        'avail_songs':set(),
+        'avail_songs':[],
         'downloaded':[],
         'uploaded':[]
     }
@@ -59,20 +59,25 @@ def valid_login(usern, passw):
     return False
 
 def get_songs(usern, passw):
+    avail_songs = db.ugas.find_one({'artist':usern})['avail_songs'][:]
+    return avail_songs
 
-    return
-
-def update_squadmem_songs(artist, new_song):
+def update_squadmem_songs(artist, new_song): #could just add one new song to the set instead of union set with list.
     list_of_artists = [artist]
-
+    avail_set = set()
     cursor = db.ugas.find_one({'artist':artist})
         #replace with better code.
+    current_songs = cursor['songs']
     squad_mems = cursor['squad'][:]
+    
     for fan in squad_mems:
-        
+        cursor2 = db.ugas.find_one({'artist':fan})
+        #avail_set = set(cursor2['avail_songs'])
+        avail_set |= set(current_songs)
+        print(avail_set)
         db.ugas.update_one(
             {'artist':fan},
-            {'$set':{ "avail_songs": new_song_list }}
+            {'$set':{ "avail_songs": list(avail_set) }}
         )
     return
 
@@ -104,23 +109,23 @@ def new_user(username):
         return True
     return False
 
-def new_song(username, filename):
+def new_song(username, song):
     new_song_list = []
     cursor = db.ugas.find_one({'artist':username})
-    if not already_uploaded( username, filename):
+    if not already_uploaded( username, song):
         #replace with better code.
         new_song_list = cursor['songs'][:]
-        new_song_list.append(filename)
+        new_song_list.append(song)
         #print(new_song_list)
         db.ugas.update_one(
             {'artist':username},
             {'$set':{ "songs": new_song_list }}
         )
-        print('\'%s\' just dropped a new single \'%s\'' % (username, filename))
-        cursor = db.ugas.find_one({'artist':username})
+        print('\'%s\' just dropped a new single \'%s\'' % (username, song))
+        update_squadmem_songs(username, song)
         #print(cursor['songs'])
         return True
-    print('Oops! Looks like \'%s\' has already uploaded \'%s\'' % (username, filename))    
+    print('Oops! Looks like \'%s\' has already uploaded \'%s\'' % (username, song))    
     return False
 # These two functions can be combined into one....
 def new_squad_mem( artist, fan):
@@ -157,8 +162,11 @@ def rmv_squad_mem(artist, fan):
 
 def in_squad(artist, fan): # can use this in conjunction with squad_add and squad_rmv
     cursor = db.ugas.find_one({'artist' : artist})
-    if fan in cursor['squad']:
-        return True
+    try:
+        if fan in cursor['squad']:
+            return True
+    except:
+        return False
     return False
 
 ### These are for when upload and download happen in smove.py
@@ -266,8 +274,8 @@ def main(args):
     cursor = ugas.find({})
 
     for doc in cursor:
-        print ('%s has songs: %s and %s are the people that can listen to these songs' %
-               (doc['artist'], doc['songs'], doc['squad']))    
+        print ('%s has songs: %s; and %s are the people that can listen to these songs. Other songs that %s has access to are %s' %
+               (doc['artist'], doc['songs'], doc['squad'], doc['artist'], doc['avail_songs']))    
 
     client.close()
 
