@@ -6,21 +6,21 @@ import pymongo
 SEED_DATA = [
     {
         'artist': 'jacko',
-        'songs': ['Quadratic Formula'],
+        'songs': ['QuadraticFormula'],
         'pass': 'malfoy',
         '#key': '',
         'squad': ['sierrius', 'rondell'],
-        'avail_songs':[],
+        'avail_songs':['Quadratic Formula'],
         'downloaded':[],
         'uploaded':[]
     },
     {
         'artist': 'sierrius',
-        'songs': ['x=(-b+or-sqrt(b^2-4ac))/2a'],
+        'songs': ['TiK ToK'],
         'pass': 'black',
         '#key' : '',
         'squad': ['rondell', 'howwy'],
-        'avail_songs':[],
+        'avail_songs':['TiK ToK'],
         'downloaded':[],
         'uploaded':[]
 
@@ -30,8 +30,18 @@ SEED_DATA = [
         'songs': ['ConspiracyTheory'],
         'pass': 'weasley',
         '#key': '',
+        'squad': ['howwy', 'jacko'],
+        'avail_songs':['ConspiracyTheory'],
+        'downloaded':[],
+        'uploaded':[]
+    },
+    {
+        'artist': 'howwy',
+        'songs': ['Snake Eater'],
+        'pass': 'potter',
+        '#key': '',
         'squad': ['howwy', 'jacko', 'sierrius'],
-        'avail_songs':[],
+        'avail_songs':['Snake Eater'],
         'downloaded':[],
         'uploaded':[]
     }
@@ -63,18 +73,21 @@ def get_songs(usern, passw):
     return avail_songs
 
 def update_squadmem_songs(artist, new_song): #could just add one new song to the set instead of union set with list.
-    list_of_artists = [artist]
+    #list_of_artists = [artist]
     avail_set = set()
     cursor = db.ugas.find_one({'artist':artist})
-        #replace with better code.
-    current_songs = cursor['songs']
+    #print(cursor)
+    current_songs = cursor['songs'][:]
     squad_mems = cursor['squad'][:]
     
     for fan in squad_mems:
         cursor2 = db.ugas.find_one({'artist':fan})
-        #avail_set = set(cursor2['avail_songs'])
+        try:
+            avail_set = set(cursor2['avail_songs'])
+        except:
+            pass
         avail_set |= set(current_songs)
-        print(avail_set)
+        #print(avail_set)
         db.ugas.update_one(
             {'artist':fan},
             {'$set':{ "avail_songs": list(avail_set) }}
@@ -87,6 +100,30 @@ def store_key(key, usern, passw):
         {'$set':{ "#key": key}}
     )
     return
+
+
+def new_song(username, song):
+    new_song_list = []
+    cursor = db.ugas.find_one({'artist':username})
+    #print(cursor)
+    if not already_uploaded( username, song):
+        #replace with better code.
+        new_song_list = cursor['songs'][:]
+        new_song_list.append(song)
+        new_avail     = cursor['avail_songs'][:]
+        new_avail.append(song)
+        #print(new_song_list)
+        db.ugas.update_one(
+            {'artist':username},
+            {'$set':{ "songs": new_song_list, 
+                      "avail_songs": new_avail}}
+        )
+        print('\'%s\' just dropped a new single \'%s\'' % (username, song))
+        update_squadmem_songs(username, song)
+        #print(cursor['songs'])
+        return True
+    print('Oops! Looks like \'%s\' has already uploaded \'%s\'' % (username, song))    
+    return False
 
 def new_user(username):
     cursor = db.artist_list.find({'uga': username})
@@ -107,34 +144,26 @@ def new_user(username):
            }
         ) 
         return True
-    return False
-
-def new_song(username, song):
-    new_song_list = []
-    cursor = db.ugas.find_one({'artist':username})
-    if not already_uploaded( username, song):
-        #replace with better code.
-        new_song_list = cursor['songs'][:]
-        new_song_list.append(song)
-        #print(new_song_list)
-        db.ugas.update_one(
-            {'artist':username},
-            {'$set':{ "songs": new_song_list }}
-        )
-        print('\'%s\' just dropped a new single \'%s\'' % (username, song))
-        update_squadmem_songs(username, song)
-        #print(cursor['songs'])
-        return True
-    print('Oops! Looks like \'%s\' has already uploaded \'%s\'' % (username, song))    
-    return False
-# These two functions can be combined into one....
+    return False# These two functions can be combined into one....
 def new_squad_mem( artist, fan):
     new_squad = []
     cursor = db.ugas.find_one({'artist':artist})
+    current_songs = cursor['songs'][:]
     if not in_squad( artist, fan):
         #replace with better code.
         new_squad = cursor['squad'][:]
         new_squad.append(fan)
+        cursor2 = db.ugas.find_one({'artist':fan})
+        try:
+            avail_set = set(cursor2['avail_songs'])
+        except:
+            pass
+        avail_set |= set(current_songs)
+        #print(avail_set)
+        db.ugas.update_one(
+            {'artist':fan},
+            {'$set':{ "avail_songs": list(avail_set) }}
+        )
         db.ugas.update(
             {'artist':artist},
             {'$set':{ "squad": new_squad }}
@@ -173,6 +202,7 @@ def in_squad(artist, fan): # can use this in conjunction with squad_add and squa
 
 def already_uploaded(  username, song):
     cursor = db.ugas.find_one({'artist':username})
+    #print(cursor)
     if song not in cursor['songs']:
         return False
     return True
@@ -224,7 +254,7 @@ def update_dl_history(username):
     return
 
 
-'''
+
 def main(args):
 
     
@@ -246,7 +276,7 @@ def main(args):
 
     query = {'artist': 'jacko'}
 
-    ugas.update(query, {'$set': {'songs': ['Das da wrong melody']}})
+    ugas.update(query, {'$set': {'songs': ['Das da wrong melody'], 'avail_songs': ['Das da wrong melody']}})
 
     # Finally we run a query which returns all the hits that spent 10 or
     # more weeks at number 1.
@@ -255,7 +285,7 @@ def main(args):
 
     for doc in cursor:
         print ('%s has songs: %s and %s are the people that can listen to these songs' %
-               (doc['artist'], doc['songs'], doc['squad']))
+               (doc['artist'].encode('utf-8'), [x.encode('utf-8') for x in doc['songs']], [x.encode('utf-8') for x in doc['squad']]))
     
     ### Since this is an example, we'll clean up after ourselves.
 
@@ -275,11 +305,10 @@ def main(args):
 
     for doc in cursor:
         print ('%s has songs: %s; and %s are the people that can listen to these songs. Other songs that %s has access to are %s' %
-               (doc['artist'], doc['songs'], doc['squad'], doc['artist'], doc['avail_songs']))    
+               (doc['artist'].encode('utf-8'), [x.encode('utf-8') for x in doc['songs']], [x.encode('utf-8') for x in doc['squad']], doc['artist'].encode('utf-8'), [x.encode('utf-8') for x in doc['avail_songs']]))    
 
     client.close()
 
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
-    '''
+# if __name__ == '__main__':
+#     main(sys.argv[1:])
