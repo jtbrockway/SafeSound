@@ -22,7 +22,6 @@ def encrypt_song(path, key):
     iv = "InitializationVe"
     e_song = ''
     encper = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(key, iv))
-    #song = open(path, "r")
     for line in file(path):
         e_song += encper.feed(line)
 
@@ -34,7 +33,6 @@ def decrypt_song(path, key):
     iv = "InitializationVe"
     d_song = ''
     decper = pyaes.Decrypter(pyaes.AESModeOfOperationCBC(key, iv))
-    #song = open(path, "r")
     for line in file(path):
         d_song += decper.feed(line)
     
