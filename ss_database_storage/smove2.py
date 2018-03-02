@@ -37,7 +37,8 @@ def get_credentials():
     Returns:
         Credentials, the obtained credential.
     """
-    credential_dir = os.path.join('./', '.credentials')
+    #credential_dir = os.path.join('./', '.credentials')
+    credential_dir = '.credentials'
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
@@ -62,8 +63,8 @@ credentials = get_credentials()
 http = credentials.authorize(httplib2.Http())
 service = discovery.build('drive', 'v3', http=http)
 
-DL_PATH = "./dlmusic/"
-UL_PATH = "./ulmusic/"
+DL_PATH = "dlmusic/"
+UL_PATH = "ulmusic/"
 UL_FOLDER = "1sd_Xt-sgMO6uNz8janaTco078D8H20ZP"
 
 def delete_file(drv_service, file_id):
@@ -94,8 +95,7 @@ def download(song_name, dl_path):
     request = service.files().get_media(fileId=file_id)
 
     text = '.txt'
-    mp3 = '.mp3'
-    file_name = song_name + mp3#text
+    file_name = song_name#text
     
     dl = 'dlc'
     handle = DL_PATH + dl + file_name
@@ -166,7 +166,7 @@ def upload(song_name, file_name_path):
     print()
     return
 
-
+'''
 #### USE MAIN FOR TESTING, PLEASE ####
 def main(): 
     results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, parents)").execute()
@@ -188,3 +188,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+'''
