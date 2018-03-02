@@ -9,6 +9,7 @@ import encrypt as enc
 import mongodrive2 as dab
 import smove2 as updown
 import pymongo
+import vlc
 
 global appP
 global editP
@@ -86,11 +87,13 @@ class appPage(Page):
 
             playFile = filedialog.askopenfilename()
             encryptFile = enc.encrypt_song(playFile, encKey)
-            #WRITE THIS TO A FILE THEN USE THAT PATH IN UPLOAD
             songName = songEntry.get()
+            path = 'ulmusic/' + songName
+            with open(path, 'wb') as encFile:
+                encFile.write(encryptFile)
             if(len(songName) > 0):
                 dab.new_song(username, songName)
-                updown.upload(songName, playFile)
+                updown.upload(songName, path)
                 songBox.insert(END, songName)
 
         uploadButton = tk.Button(self, text = "Upload", command = upload)
@@ -112,11 +115,21 @@ class appPage(Page):
             song = songBox.get(songSel[0])
             updown.download(song, "/dlmusic/")
             song = song
-            path = 'dlmusic/' + 'dlc' + song
+            path = 'dlmusic/' + 'dlc' + song + '.mp3'
             decryptFile = enc.decrypt_song(path, encKey)
 
-            with open('dec.mp3', 'wb') as unenc:
+            decSong = 'dlmusic/dec' + song + '.mp3'
+            with open(decSong, 'wb') as unenc:
                 unenc.write(decryptFile)
+            print("Done Decrypt")
+
+            instance = vlc.Instance()
+            player = instance.media_player_new()
+            media = instance.media_new(decSong)
+            player.play()
+            player.set_position(50)
+            player.audio_set_volume(70)
+            print("Here")
 
 
         playButton = tk.Button(self, text = "Play", command = play)
