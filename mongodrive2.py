@@ -2,23 +2,25 @@ import sys
 import pymongo
 
 ### Create seed data
-'''
+
 SEED_DATA = [
     {
         'artist': 'jacko',
-        'songs': ['Quadratic Formula'],
+        'songs': ['QuadraticFormula'],
         'pass': 'malfoy',
         '#key': '',
         'squad': ['sierrius', 'rondell'],
+        'avail_songs':['Quadratic Formula'],
         'downloaded':[],
         'uploaded':[]
     },
     {
         'artist': 'sierrius',
-        'songs': ['x=(-b+or-sqrt(b^2-4timesac))/2a'],
+        'songs': ['TiK ToK'],
         'pass': 'black',
         '#key' : '',
         'squad': ['rondell', 'howwy'],
+        'avail_songs':['TiK ToK'],
         'downloaded':[],
         'uploaded':[]
 
@@ -28,31 +30,76 @@ SEED_DATA = [
         'songs': ['ConspiracyTheory'],
         'pass': 'weasley',
         '#key': '',
+        'squad': ['howwy', 'jacko'],
+        'avail_songs':['ConspiracyTheory'],
+        'downloaded':[],
+        'uploaded':[]
+    }
+    {
+        'artist': 'howwy',
+        'songs': ['Snake Eater'],
+        'pass': 'potter',
+        '#key': '',
         'squad': ['howwy', 'jacko', 'sierrius'],
+        'avail_songs':['Snake Eater'],
         'downloaded':[],
         'uploaded':[]
     }
 ]
-'''
+
 ### Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
 
-uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga" 
+uri = 'mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga' 
 
 ###############################################################################
 # main
 ###############################################################################
 client = pymongo.MongoClient(uri)
 
+
 db = client.get_default_database() ## db as a global reference to the database
 
 def valid_login(usern, passw):
     cursor = db.ugas.find({'artist': usern})
-    while cursor is not None: ## Not sure if this is what it will be.
+    if cursor is not None: ## Not sure if this is what it will be.
         if passw==cursor.next()['pass']:
             print('Success! Logged in as \'%s\'' % (usern))
             return True
     print('Oops! User \'%s\' and/or the password entered did not match our records' % (usern))
     return False
+
+def get_songs(usern, passw):
+    avail_songs = db.ugas.find_one({'artist':usern})['avail_songs'][:]
+    return avail_songs
+
+def update_squadmem_songs(artist, new_song): #could just add one new song to the set instead of union set with list.
+    list_of_artists = [artist]
+    avail_set = set()
+    cursor = db.ugas.find_one({'artist':artist})
+        #replace with better code.
+    current_songs = cursor['songs']
+    squad_mems = cursor['squad'][:]
+    
+    for fan in squad_mems:
+        cursor2 = db.ugas.find_one({'artist':fan})
+        try:
+            avail_set = set(cursor2['avail_songs'])
+        except:
+            pass
+        avail_set |= set(current_songs)
+        print(avail_set)
+        db.ugas.update_one(
+            {'artist':fan},
+            {'$set':{ "avail_songs": list(avail_set) }}
+        )
+    return
+
+def store_key(key, usern, passw):
+    db.ugas.update(
+        {'artist':usern},
+        {'$set':{ "#key": key}}
+    )
+    return
 
 def new_user(username):
     cursor = db.artist_list.find({'uga': username})
@@ -67,6 +114,7 @@ def new_user(username):
             'pass': '',
             '#key': '',
             'squad': [],
+            'avail_songs':[],
             'downloaded':[],
             'uploaded':[]
            }
@@ -74,23 +122,25 @@ def new_user(username):
         return True
     return False
 
-def new_song(username, filename):
+def new_song(username, song):
     new_song_list = []
     cursor = db.ugas.find_one({'artist':username})
-    if not already_uploaded( username, filename):
+    new_avail = cursor['avail_songs'][:]
+    if not already_uploaded( username, song):
         #replace with better code.
-        new_song_list = cursor['songs'][:]
-        new_song_list.append(filename)
+        new_song_list = cursor['songs'][:].append(song)
+        new_avail     = cursor['avail_songs'][:].append(song)
         #print(new_song_list)
         db.ugas.update_one(
             {'artist':username},
-            {'$set':{ "songs": new_song_list }}
+            {'$set':{ "songs": new_song_list, 
+                      "avail_songs": new_avail}}
         )
-        print('\'%s\' just dropped a new single \'%s\'' % (username, filename))
-        cursor = db.ugas.find_one({'artist':username})
+        print('\'%s\' just dropped a new single \'%s\'' % (username, song))
+        update_squadmem_songs(username, song)
         #print(cursor['songs'])
         return True
-    print('Oops! Looks like \'%s\' has already uploaded \'%s\'' % (username, filename))    
+    print('Oops! Looks like \'%s\' has already uploaded \'%s\'' % (username, song))    
     return False
 # These two functions can be combined into one....
 def new_squad_mem( artist, fan):
@@ -127,8 +177,11 @@ def rmv_squad_mem(artist, fan):
 
 def in_squad(artist, fan): # can use this in conjunction with squad_add and squad_rmv
     cursor = db.ugas.find_one({'artist' : artist})
-    if fan in cursor['squad']:
-        return True
+    try:
+        if fan in cursor['squad']:
+            return True
+    except:
+        return False
     return False
 
 ### These are for when upload and download happen in smove.py
@@ -186,7 +239,7 @@ def update_dl_history(username):
     return
 
 
-'''
+
 def main(args):
 
     
@@ -194,8 +247,8 @@ def main(args):
     # First we'll add a few songs. Nothing is required to create the songs 
     # collection; it is created automatically when we insert.
     
-    db.drop_collection('ugas')
-    ugas = db['ugas']
+    #db.drop_collection('ugas')
+    ugas = db['testugas']
 
     # Note that the insert method can take either an array or a single dict.
 
@@ -236,12 +289,11 @@ def main(args):
     cursor = ugas.find({})
 
     for doc in cursor:
-        print ('%s has songs: %s and %s are the people that can listen to these songs' %
-               (doc['artist'], doc['songs'], doc['squad']))    
+        print ('%s has songs: %s; and %s are the people that can listen to these songs. Other songs that %s has access to are %s' %
+               (doc['artist'], doc['songs'], doc['squad'], doc['artist'], doc['avail_songs']))    
 
     client.close()
 
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-'''
