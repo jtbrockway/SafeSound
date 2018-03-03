@@ -3,13 +3,13 @@
 #https://stackoverflow.com/questions/14817210/using-buttons-in-tkinter-to-navigate-to-different-pages-of-the-applicationrint("hi")
 '''
 import Tkinter as tk
-from Tkinter import *
+from Tkinter import * #are these two lines not equivalent?? choose one? :)  -S
 import tkFileDialog as filedialog
 import encrypt as enc
 import mongodrive2 as dab
 import smove2 as updown
 import pymongo
-import vlc
+#import vlc
 
 global appP
 global editP

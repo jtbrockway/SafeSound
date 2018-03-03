@@ -1,59 +1,41 @@
 import pyaes
+import pyscrypt
 
 
-def adjust(string):
+# adds a pad of length l to the input string
+def adjust(string, l):
     leng = len(string)
-    if leng < 16:
-        string = string.zfill(16)
-    elif leng > 16:
-        string = string[:16]
+    if leng < l:
+        string = string.zfill(l)
+    elif leng > l:
+        string = string[:l]
     return string
 
+# uses pyscrypt to create a hash of a username + password that can be used for AES encryption
 def get_user_hash(username, password):
-    username = adjust(username)
-    password = adjust(password)
-    user = username+password
-    user = user.encode('utf-8')
-    aes = pyaes.AESModeOfOperationCTR(user)
-    key = aes.encrypt(user)
-    return key
+    username = adjust(username, 16)
+    password = adjust(password, 16)
+    user = username + password
+    key = pyscrypt.hash(password = user, salt = "seasalt", N = 1024, r = 1, p = 1, dkLen = 32)
+    key = adjust(key, 16)
+    return key.encode('hex')
 
-def encrypt_song(path, key):
+# uses pyaes to encrypt a song using a block feeder
+def encrypt_song(song, key):
     iv = "InitializationVe"
     e_song = ''
     encper = pyaes.Encrypter(pyaes.AESModeOfOperationCBC(key, iv))
-    for line in file(path):
+    for line in file(song):
         e_song += encper.feed(line)
-
-    print("Feeding Encrypter")
     e_song += encper.feed()
     return e_song
 
+# uses pyaes to decrypt a song using a block feeder
 def decrypt_song(path, key):
     iv = "InitializationVe"
     d_song = ''
     decper = pyaes.Decrypter(pyaes.AESModeOfOperationCBC(key, iv))
     for line in file(path):
         d_song += decper.feed(line)
-    
-    print("Feeding Decrypter")
     d_song += decper.feed()
     return d_song
-
-
-''' 
-TEST CODE:
-key = "123456781234567812345678"
-key = key.encode('utf-8')
-
-print("ENCRYPTING")
-encrypted_song = encrypt_song("ConspiracyTheory.mp3", key)
-with open("crypt.mp3", "wb") as text_file:
-    text_file.write(encrypted_song)
-
-print("DECRYPTING")
-decrypted_song = decrypt_song("crypt.mp3", key)
-with open("norm.mp3", "wb") as unenc:
-    unenc.write(decrypted_song)
-'''
-
