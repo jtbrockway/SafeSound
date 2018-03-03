@@ -68,6 +68,15 @@ def get_songs(usern, passw):
     avail_songs = db.ugas.find_one({'artist':usern})['avail_songs'][:]
     return avail_songs
 
+def get_key(artist, fan, song):
+    if in_squad(artist, fan):
+        cursor = db.ugas.find_one({'artist':artist})
+        key    = cursor['#key']
+        print("%s's key was retrieved for %s."%(artist, fan))
+        return key
+    print("Unable to get the artist's key.") 
+    return None
+
 def update_squadmem_songs(artist, new_song): #could add 1 new song to set instead of (set U list).
     #list_of_artists = [artist]
     avail_set = set()
