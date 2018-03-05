@@ -109,20 +109,21 @@ class appPage(Page):
 
         playFile = ""
         def play():
-            global encKey
+            global username
 
             songSel = songBox.curselection()
             song = songBox.get(songSel[0])
             updown.download(song, "/dlmusic/")
-            song = song
             path = 'dlmusic/' + 'dlc' + song + '.mp3'
-            decryptFile = enc.decrypt_song(path, encKey)
+
+            decKey = dab.get_key(username, song)
+            decryptFile = enc.decrypt_song(path, decKey)
 
             decSong = 'dlmusic/dec' + song + '.mp3'
             with open(decSong, 'wb') as unenc:
                 unenc.write(decryptFile)
             print("Done Decrypt")
-
+            '''
             instance = vlc.Instance()
             player = instance.media_player_new()
             media = instance.media_new(decSong)
@@ -130,6 +131,7 @@ class appPage(Page):
             player.set_position(50)
             player.audio_set_volume(70)
             print("Here")
+            '''
 
 
         playButton = tk.Button(self, text = "Play", command = play)
@@ -176,8 +178,7 @@ class loginPage(Page):
             songList = dab.get_songs(username, password)
             for item in songList:
                 songBox.insert(END, item)
-            print(songList)
-            #dab.store_key(keys, username, password)
+            dab.store_key(encKey, username, password)
             viewHandler.showApp(viewhandler)
 
       loginButton = tk.Button(self, text = "Login", command = login)
