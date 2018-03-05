@@ -68,13 +68,15 @@ def get_songs(usern, passw):
     avail_songs = db.ugas.find_one({'artist':usern})['avail_songs'][:]
     return avail_songs
 
-def get_key(artist, fan, song):
-    if in_squad(artist, fan):
-        cursor = db.ugas.find_one({'artist':artist})
-        key    = cursor['#key']
-        print("%s's key was retrieved for %s."%(artist, fan))
-        return key
-    print("Unable to get the artist's key.") 
+def get_key(fan, song):
+    avail_artists = db.ugas.find()
+    for docu in avail_artists:
+        if in_squad(docu['artist'], fan) and song in docu['songs']:
+            cursor = db.ugas.find_one({'artist':docu['artist']})
+            key    = cursor['#key']
+            print("%s's key was retrieved for %s."%(docu['artist'], fan))
+            return key
+    print("Unable to get the artist's key. '%s' is not in the squad of the artist of '%s'"% (fan, song)) 
     return None
 
 def update_squadmem_songs(artist, new_song): #could add 1 new song to set instead of (set U list).
@@ -293,5 +295,8 @@ def main(args):
 
     client.close()
 
+# get_key('sierrius', 'ConspiracyTheory')
+# get_key('jacko', 'TiK ToK')
+# client.close()
 # if __name__ == '__main__':
 #     main(sys.argv[1:])
