@@ -73,7 +73,7 @@ def get_key(fan, song):
     
     if song in fan_cursor['songs']:
         key = fan_cursor['#key']
-        print("%s retrieved their own key for their own song"%fan)
+        print("%s retrieved their own key for their own song '%s'"%(fan,song))
         return key
     avail_artists = db.ugas.find()
     for docu in avail_artists:
