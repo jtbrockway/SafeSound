@@ -69,9 +69,15 @@ def get_songs(usern, passw):
     return avail_songs
 
 def get_key(fan, song):
+    fan_cursor = db.ugas.find_one({'artist':fan})
+    
+    if song in fan_cursor['songs']:
+        key = fan_cursor['#key']
+        print("%s retrieved their own key for their own song"%fan)
+        return key
     avail_artists = db.ugas.find()
     for docu in avail_artists:
-        if in_squad(docu['artist'], fan) and song in docu['songs']:
+        if (in_squad(docu['artist'], fan) and song in docu['songs']):
             cursor = db.ugas.find_one({'artist':docu['artist']})
             key    = cursor['#key']
             print("%s's key was retrieved for %s."%(docu['artist'], fan))
@@ -178,13 +184,27 @@ def rmv_squad_mem(artist, fan):
     cursor = db.ugas.find_one({'artist':artist})
     if in_squad( artist, fan):
         #replace with better code.
+        rmv_songs = cursor['songs'][:]
         new_squad = cursor['squad'][:]
+        print("%s's squad before: %s"%(artist, new_squad))
+        fan_cursor = db.ugas.find_one({'artist':fan})
+        new_fan_songs = fan_cursor['avail_songs'][:]
+        print("%s's available songs before: %s"%(fan, new_fan_songs))
         new_squad.remove(fan)
+
         db.ugas.update(
             {'artist':artist},
             {'$set':{ "squad": new_squad }}
         )
+        db.ugas.update(
+            {'artist':fan},
+            {'$set':{ "avail_songs": [song for song in new_fan_songs if song not in rmv_songs]}}
+        )
         print('\'%s\' drops \'%s\' from their squad!' % (artist, fan))
+        cursor     = db.ugas.find_one({'artist':artist})
+        fan_cursor = db.ugas.find_one({'artist':fan   })
+        print("%s's squad after: %s"%(artist, cursor['squad']))
+        print("%s's avail_songs after: %s"%(fan, fan_cursor['avail_songs']))
         return True
     print('\'%s\' can\'t drop non-member \'%s\' from their squad!' % (artist, fan))
     return False
@@ -295,6 +315,10 @@ def main(args):
 
     client.close()
 
+# rmv_squad_mem('sierrius', 'jacko')
+# new_squad_mem('sierrius', 'jacko')
+# rmv_squad_mem('sierrius', 'jacko')
+# new_squad_mem('sierrius', 'jacko')
 # get_key('sierrius', 'ConspiracyTheory')
 # get_key('jacko', 'TiK ToK')
 # client.close()
