@@ -10,6 +10,7 @@ SEED_DATA = [
         '#key': '',
         'squad': ['sierrius', 'rondell'],
         'avail_songs':['Quadratic Formula'],
+        'idols':['howwy','rondell'],
         'downloaded':[],
         'uploaded':[]
     },
@@ -20,6 +21,7 @@ SEED_DATA = [
         '#key' : '',
         'squad': ['rondell', 'howwy'],
         'avail_songs':['TiK ToK'],
+        'idols':['howwy','jacko'],
         'downloaded':[],
         'uploaded':[]
 
@@ -31,6 +33,7 @@ SEED_DATA = [
         '#key': '',
         'squad': ['howwy', 'jacko'],
         'avail_songs':['ConspiracyTheory'],
+        'idols':['howwy','sierrius','jacko'],
         'downloaded':[],
         'uploaded':[]
     },
@@ -39,8 +42,9 @@ SEED_DATA = [
         'songs': ['Snake Eater'],
         'pass': 'potter',
         '#key': '',
-        'squad': ['howwy', 'jacko', 'sierrius'],
+        'squad': ['jacko', 'sierrius', 'rondell'],
         'avail_songs':['Snake Eater'],
+        'idols':['sierrius', 'rondell'],
         'downloaded':[],
         'uploaded':[]
     }
@@ -111,6 +115,7 @@ def store_key(key, usern, passw):
     )
     return
 
+###  CAN ADD A WAY TO CHECK FOR BLATANT PLAGIARISTIC UPLOADS  ###
 def new_song(username, song):
     new_song_list = []
     cursor = db.ugas.find_one({'artist':username})
@@ -145,6 +150,7 @@ def new_user(username):
             '#key': '',
             'squad': [],
             'avail_songs':[],
+            'idols':[],
             'downloaded':[],
             'uploaded':[]
            }
@@ -153,7 +159,9 @@ def new_user(username):
     return False # These two functions can be combined into one....
 
 def new_squad_mem( artist, fan):
+    print("======================NEW_SQAUD_MEM==============================")
     new_squad = []
+    new_idols = []
     cursor = db.ugas.find_one({'artist':artist})
     current_songs = cursor['songs'][:]
     if not in_squad( artist, fan):
@@ -166,20 +174,25 @@ def new_squad_mem( artist, fan):
         except:
             pass
         avail_set |= set(current_songs)
+        new_idols = cursor2['idols'][:]
+        print("%s's idols before: %s"%(fan, new_idols))
+        new_idols.append(artist)
         db.ugas.update_one(
             {'artist':fan},
-            {'$set':{ "avail_songs": list(avail_set) }}
+            {'$set':{ "avail_songs": list(avail_set),'idols': new_idols}}
         )
         db.ugas.update(
             {'artist':artist},
             {'$set':{ "squad": new_squad }}
         )
+        print("%s's idols after: %s"%(fan, new_idols))
         print('\'%s\' welcomes \'%s\' to their squad!' % (artist, fan))
         return True
     print('\'%s\' already has \'%s\' in their squad!' % (artist, fan))    
     return False
 
 def rmv_squad_mem(artist, fan):
+    print("======================RMV_SQAUD_MEM==============================")
     new_squad = []
     cursor = db.ugas.find_one({'artist':artist})
     if in_squad( artist, fan):
@@ -189,8 +202,11 @@ def rmv_squad_mem(artist, fan):
         print("%s's squad before: %s"%(artist, new_squad))
         fan_cursor = db.ugas.find_one({'artist':fan})
         new_fan_songs = fan_cursor['avail_songs'][:]
+        new_fan_idols = fan_cursor['idols'][:]
+        print("%s's idols before: %s"%(fan, new_fan_idols))
         print("%s's available songs before: %s"%(fan, new_fan_songs))
         new_squad.remove(fan)
+        new_fan_idols.remove(artist)
 
         db.ugas.update(
             {'artist':artist},
@@ -198,12 +214,13 @@ def rmv_squad_mem(artist, fan):
         )
         db.ugas.update(
             {'artist':fan},
-            {'$set':{ "avail_songs": [song for song in new_fan_songs if song not in rmv_songs]}}
+            {'$set':{ "avail_songs": [song for song in new_fan_songs if song not in rmv_songs],'idols': new_fan_idols}}
         )
         print('\'%s\' drops \'%s\' from their squad!' % (artist, fan))
         cursor     = db.ugas.find_one({'artist':artist})
         fan_cursor = db.ugas.find_one({'artist':fan   })
         print("%s's squad after: %s"%(artist, cursor['squad']))
+        print("%s's idols after: %s"%(fan, fan_cursor['idols']))
         print("%s's avail_songs after: %s"%(fan, fan_cursor['avail_songs']))
         return True
     print('\'%s\' can\'t drop non-member \'%s\' from their squad!' % (artist, fan))
@@ -272,6 +289,7 @@ def update_dl_history(username):
     )
     return
 
+### USE MAIN FOR TESTING PURPOSES ###
 def main(args):
     # First we'll add a few songs. Nothing is required to create the songs 
     # collection; it is created automatically when we insert.
@@ -305,6 +323,10 @@ def main(args):
     ### Only close the connection when your app is terminating
     new_song('jacko','myspaghet')
     new_song('jacko','myspaghet')
+    #rmv_squad_mem('sierrius', 'jacko')
+    new_squad_mem('sierrius', 'jacko')
+    rmv_squad_mem('sierrius', 'jacko')
+    new_squad_mem('sierrius', 'jacko')
     rmv_squad_mem('sierrius', 'jacko')
     new_squad_mem('sierrius', 'jacko')
 
@@ -315,6 +337,7 @@ def main(args):
 
     client.close()
 
+
 # rmv_squad_mem('sierrius', 'jacko')
 # new_squad_mem('sierrius', 'jacko')
 # rmv_squad_mem('sierrius', 'jacko')
@@ -324,3 +347,4 @@ def main(args):
 # client.close()
 # if __name__ == '__main__':
 #     main(sys.argv[1:])
+
