@@ -1,7 +1,3 @@
-'''
-#SEE THIS LINK
-#https://stackoverflow.com/questions/14817210/using-buttons-in-tkinter-to-navigate-to-different-pages-of-the-applicationrint("hi")
-'''
 import Tkinter as tk
 from Tkinter import * #are these two lines not equivalent?? choose one? :)  -S
 import tkFileDialog as filedialog
@@ -22,6 +18,7 @@ global songBox
 global logged
 global logP
 global logBackButton
+global newButton
 
 username = ''
 password = ''
@@ -106,8 +103,10 @@ class appPage(Page):
 
         def edit():
             global logBackButton
+	    global newButton
 
             logBackButton.config(state=NORMAL)
+	    newButton.config(state=DISABLED)
             viewHandler.showLogin(viewhandler)
 
         editButton = tk.Button(self, text = "Edit Squad", command = edit)
@@ -163,6 +162,7 @@ class loginPage(Page):
       global logged
       global logBackButton
       global failLabel
+      global newButton
 
       userLabel = tk.Label(self, text="Username:")
       userLabel.pack(side="top")
@@ -209,6 +209,26 @@ class loginPage(Page):
 
       loginButton = tk.Button(self, text = "Login", command = login)
       loginButton.pack(side="top")
+
+      def newUser():
+		global username
+		global password
+		global encKey
+		global logged
+
+		username = userEntry.get()
+		password = passEntry.get()
+		encKey = enc.get_user_hash(username, password)
+		dab.new_user(username, password)
+
+		dab.store_key(encKey, username, password)
+		logged = 1
+		passEntry.delete(0, 'end')
+		viewHandler.showApp(viewhandler)
+		  
+
+      newButton = tk.Button(self, text = "New User", command = newUser)
+      newButton.pack(side="top")
 
 class viewHandler(tk.Frame):
     def __init__(self, *args, **kwargs):
