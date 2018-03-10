@@ -19,6 +19,8 @@ global logged
 global logP
 global logBackButton
 global newButton
+global idolP
+global idolBox
 
 username = ''
 password = ''
@@ -67,6 +69,29 @@ class editPage(Page):
         removeButton = tk.Button(self, text="Remove Member", command = removeSquad)
         removeButton.pack(side="top", fill = "x", anchor = "w")
 
+class idolPage(Page):
+    def __init__(self, *args, **kwargs):
+        Page.__init__(self, *args, **kwargs)
+        global viewhandler
+        global idolBox
+
+        def back():
+            viewHandler.showApp(viewhandler)
+
+        backButton = tk.Button(self, text="Back", command = back)
+        backButton.pack(side="top", fill = "x", anchor = "w")
+
+        idolLabel = tk.Label(self, text="Idols:")
+        idolLabel.pack()
+        
+        scrollbar = tk.Scrollbar(self, orient="vertical")
+        idolBox = tk.Listbox(self, yscrollcommand = scrollbar.set)
+
+        scrollbar.config(command=idolBox.yview)
+        scrollbar.pack(side="right", fill="y")
+        #scrollbar.grid(row=0,column=2, rowspan = 3)
+        idolBox.pack(side="top", fill="both", expand=True)
+
 class appPage(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
@@ -75,6 +100,7 @@ class appPage(Page):
         global password
         global songList
         global songBox
+        global idolBox
 
         songLabel = tk.Label(self, text='Enter name of song to be uploaded')
         songLabel.pack(side='top')
@@ -103,15 +129,28 @@ class appPage(Page):
 
         def edit():
             global logBackButton
-	    global newButton
+            global newButton
 
             logBackButton.config(state=NORMAL)
-	    newButton.config(state=DISABLED)
+            newButton.config(state=DISABLED)
             viewHandler.showLogin(viewhandler)
 
         editButton = tk.Button(self, text = "Edit Squad", command = edit)
         editButton.pack(side="top", fill = "x", anchor = "e")
         #editButton.grid(row=5,column=2, sticky = N+S+E+W)
+
+        def idols():
+            global idolBox
+            global viewhandler
+            global username
+
+            idolList = dab.get_idols(username)
+            for item in idolList:
+                idolBox.insert(END, item)
+            viewHandler.showIdol(viewhandler)
+
+        idolButton = tk.Button(self, text="Idols", command = idols)
+        idolButton.pack(side="top", fill = "x", anchor = "e")
 
         playFile = ""
         def play():
@@ -235,12 +274,14 @@ class viewHandler(tk.Frame):
         global appP
         global editP
         global logP
+        global idolP
 
         viewhandler = self
 
         logP = loginPage(self)
         appP = appPage(self)
         editP = editPage(self)
+        idolP = idolPage(self)
 
         buttonframe = tk.Frame(self)
         container = tk.Frame(self)
@@ -250,6 +291,7 @@ class viewHandler(tk.Frame):
         logP.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         appP.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         editP.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        idolP.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
         logP.show()
 
@@ -264,6 +306,10 @@ class viewHandler(tk.Frame):
     def showEdit(self):
         global editP
         editP.show()
+
+    def showIdol(self):
+        global idolP
+        idolP.show()
 
 if __name__ == "__main__":
     root = tk.Tk()
