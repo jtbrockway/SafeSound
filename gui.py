@@ -19,11 +19,15 @@ global password
 global encKey
 global songList
 global songBox
+global logged
+global logP
+global logBackButton
 
 username = ''
 password = ''
 encKey = ''
 songList = ''
+logged = 0
 
 uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga"
 client = pymongo.MongoClient(uri)
@@ -101,7 +105,10 @@ class appPage(Page):
         #uploadButton.grid(row=4, column=2, sticky = N+S+E+W)
 
         def edit():
-            viewHandler.showEdit(viewhandler)
+            global logBackButton
+
+            logBackButton.config(state=NORMAL)
+            viewHandler.showLogin(viewhandler)
 
         editButton = tk.Button(self, text = "Edit Squad", command = edit)
         editButton.pack(side="top", fill = "x", anchor = "e")
@@ -153,6 +160,9 @@ class loginPage(Page):
 
       global viewhandler
       global encKey
+      global logged
+      global logBackButton
+      global failLabel
 
       userLabel = tk.Label(self, text="Username:")
       userLabel.pack(side="top")
@@ -164,22 +174,38 @@ class loginPage(Page):
       passEntry = tk.Entry(self, text='', show="*", width=16)
       passEntry.pack(side="top")
 
+      def back():
+        viewHandler.showApp(viewhandler)
+
+      logBackButton = tk.Button(self, text="Back", command = back)
+      logBackButton.pack(side="bottom", fill = "x", anchor = "w")
+      logBackButton.config(state=DISABLED)
+
       def login():
         global songList
         global username
         global password
         global songBox
         global encKey
-        username = userEntry.get()
-        password = passEntry.get()
-        
-        encKey = enc.get_user_hash(username, password)
-        if(dab.valid_login(username, password)):
-            songList = dab.get_songs(username, password)
-            for item in songList:
-                songBox.insert(END, item)
-            dab.store_key(encKey, username, password)
-            viewHandler.showApp(viewhandler)
+        global logged
+
+        if(logged == 0):
+            username = userEntry.get()
+            password = passEntry.get()
+            encKey = enc.get_user_hash(username, password)
+            if(dab.valid_login(username, password)):
+                songList = dab.get_songs(username, password)
+                for item in songList:
+                    songBox.insert(END, item)
+                dab.store_key(encKey, username, password)
+                
+                logged = 1
+                passEntry.delete(0, 'end')
+
+                viewHandler.showApp(viewhandler)
+        else:
+            if((userEntry.get() == username) and (passEntry.get() == password)):
+                viewHandler.showEdit(viewhandler)
 
       loginButton = tk.Button(self, text = "Login", command = login)
       loginButton.pack(side="top")
@@ -190,6 +216,7 @@ class viewHandler(tk.Frame):
         global viewhandler
         global appP
         global editP
+        global logP
 
         viewhandler = self
 
@@ -206,6 +233,10 @@ class viewHandler(tk.Frame):
         appP.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
         editP.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
+        logP.show()
+
+    def showLogin(self):
+        global logP
         logP.show()
 
     def showApp(self):
