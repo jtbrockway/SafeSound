@@ -115,6 +115,13 @@ def store_key(key, usern, passw):
     )
     return
 
+def get_idols(fan):
+    fan_cursor = db.ugas.find_one({'artist':fan})
+    
+    idols = fan_cursor['idols'][:]
+    print("%s has idols: %s"%(fan,idols))
+    return idols
+
 ###  CAN ADD A WAY TO CHECK FOR BLATANT PLAGIARISTIC UPLOADS  ###
 def new_song(username, song):
     new_song_list = []
@@ -136,7 +143,7 @@ def new_song(username, song):
     print('Oops! Looks like \'%s\' has already uploaded \'%s\'' % (username, song))    
     return False
 
-def new_user(username):
+def new_user(username, password):
     cursor = db.artist_list.find({'uga': username})
     if cursor == None:
         db.artistlist.insert(
@@ -146,7 +153,7 @@ def new_user(username):
            {
             'artist': username,
             'songs': [],
-            'pass': '',
+            'pass': password,
             '#key': '',
             'squad': [],
             'avail_songs':[],
@@ -155,7 +162,9 @@ def new_user(username):
             'uploaded':[]
            }
         ) 
+        print("New user '%s' has joined SafeSound" % username)
         return True
+    print("Error. Unable to create new user, '%s'. They already exist" % username)
     return False # These two functions can be combined into one....
 
 def new_squad_mem( artist, fan):
