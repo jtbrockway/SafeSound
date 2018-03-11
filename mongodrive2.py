@@ -144,8 +144,10 @@ def new_song(username, song):
     return False
 
 def new_user(username, password):
-    cursor = db.artist_list.find({'uga': username})
+    cursor = db.ugas.find_one({'uga': username})
+    #print(cursor)
     if cursor == None:
+        # print("cursor is None.")
         db.artistlist.insert(
             {'uga':username}
         )
