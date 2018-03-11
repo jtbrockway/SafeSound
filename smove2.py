@@ -66,6 +66,8 @@ DL_PATH = "./dlmusic/"
 UL_PATH = "./ulmusic/"
 UL_FOLDER = "1sd_Xt-sgMO6uNz8janaTco078D8H20ZP"
 
+### WHEN FINALIZED, WILL NEED TO MOVE TO DIFFERENT DRIVE ACCOUNT AND TAKE OUT THE PARENT CHECKS. ###
+
 def delete_file(drv_service, file_id):
     try:
         drv_service.files().delete(fileId=file_id).execute()
@@ -104,7 +106,7 @@ def download(song_name, dl_path):
     done = False
     while done is False:
         status, done = downloader.next_chunk()
-        print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bDownload progress             : %d%%." % int(status.progress() * 100), end='')
+        print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bDownload progress             : %d%%." % int(status.progress() * 100), end='')
 
     results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, parents)").execute()
     items = results.get('files', [])
