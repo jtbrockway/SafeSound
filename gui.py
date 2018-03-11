@@ -219,14 +219,12 @@ class loginPage(Page):
 		username = userEntry.get()
 		password = passEntry.get()
 		encKey = enc.get_user_hash(username, password)
-		dab.new_user(username, password)
-
-		dab.store_key(encKey, username, password)
-		logged = 1
-		passEntry.delete(0, 'end')
-		viewHandler.showApp(viewhandler)
+		if(dab.new_user(username, password)):
+			dab.store_key(encKey, username, password)
+			logged = 1
+			passEntry.delete(0, 'end')
+			viewHandler.showApp(viewhandler)
 		  
-
       newButton = tk.Button(self, text = "New User", command = newUser)
       newButton.pack(side="top")
 
