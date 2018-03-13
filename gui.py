@@ -8,6 +8,7 @@ import pymongo
 import vlc
 import time
 import thread
+import threading
 
 global appP
 global editP
@@ -26,6 +27,7 @@ global idolBox
 global pausePressed
 global player
 global song
+global songLock
 
 username = ''
 password = ''
@@ -33,6 +35,8 @@ encKey = ''
 songList = ''
 logged = 0
 pausePressed = True
+
+songLock = threading.Lock()
 
 uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga"
 client = pymongo.MongoClient(uri)
@@ -192,6 +196,7 @@ class appPage(Page):
             global player
             global song
             global pausePressed
+            global songLock
             
             playing = set([1,2,3,4])
             player.play()
@@ -205,7 +210,9 @@ class appPage(Page):
                 elif not pausePressed:
                     currentTime = player.get_time() / 1000
                     cmm, css = divmod(currentTime, 60)
+                    songLock.acquire()
                     songNameLabel["text"] = "Playing " + song + ". Time: " + "%02d:%02d/%02d:%02d" % (cmm,css,mm,ss)
+                    songLock.release()
                 continue
 
         def play():
@@ -214,9 +221,6 @@ class appPage(Page):
             global song
 
             pausePressed = not pausePressed
-            if pausePressed:
-                songNameLabel["text"] = "Paused " + song + "."
-
             if playButton["text"] == "Play":
                 playButton["text"] = "Pause"
                 thread.start_new_thread(playSong, ())
@@ -226,6 +230,11 @@ class appPage(Page):
             else:
                 player.play()
                 playButton["text"] = "Pause"
+
+            if pausePressed:
+                songLock.acquire()
+                songNameLabel["text"] = "Paused " + song + "."
+                songLock.release()
             
 
         playButton = tk.Button(self, text = "Play", command = play)
