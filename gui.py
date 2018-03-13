@@ -5,7 +5,9 @@ import encrypt as enc
 import mongodrive2 as dab
 import smove2 as updown
 import pymongo
-#import vlc
+import vlc
+import time
+import thread
 
 global appP
 global editP
@@ -21,12 +23,16 @@ global logBackButton
 global newButton
 global idolP
 global idolBox
+global pausePressed
+global player
+global song
 
 username = ''
 password = ''
 encKey = ''
 songList = ''
 logged = 0
+pausePressed = True
 
 uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga"
 client = pymongo.MongoClient(uri)
@@ -152,9 +158,14 @@ class appPage(Page):
         idolButton = tk.Button(self, text="Idols", command = idols)
         idolButton.pack(side="top", fill = "x", anchor = "e")
 
+        songNameLabel = tk.Label(self, text = "No Song Playing")
+
         playFile = ""
-        def play():
+        def load():
             global username
+            global pausePressed
+            global player
+            global song
 
             songSel = songBox.curselection()
             song = songBox.get(songSel[0])
@@ -165,22 +176,65 @@ class appPage(Page):
             decryptFile = enc.decrypt_song(path, decKey)
 
             decSong = 'dlmusic/dec' + song + '.mp3'
-            with open(decSong, 'wb') as unenc:
+            with open(decSong, 'w') as unenc:
                 unenc.write(decryptFile)
             print("Done Decrypt")
-            '''
+
+            #Play the music
             instance = vlc.Instance()
             player = instance.media_player_new()
             media = instance.media_new(decSong)
-            player.play()
-            player.set_position(50)
-            player.audio_set_volume(70)
-            print("Here")
-            '''
+            media.get_mrl()
+            player.set_media(media)
+            songNameLabel["text"] = song + " ready to play"
 
+        def playSong():
+            global player
+            global song
+            global pausePressed
+            
+            playing = set([1,2,3,4])
+            player.play()
+            time.sleep(3)
+            duration = player.get_length() / 1000
+            mm, ss = divmod(duration, 60)
+            while True:
+                state = player.get_state()
+                if state not in playing:
+                    break 
+                elif not pausePressed:
+                    currentTime = player.get_time() / 1000
+                    cmm, css = divmod(currentTime, 60)
+                    songNameLabel["text"] = "Playing " + song + ". Time: " + "%02d:%02d/%02d:%02d" % (cmm,css,mm,ss)
+                continue
+
+        def play():
+            global pausePressed
+            global player
+            global song
+
+            pausePressed = not pausePressed
+            if pausePressed:
+                songNameLabel["text"] = "Paused " + song + "."
+
+            if playButton["text"] == "Play":
+                playButton["text"] = "Pause"
+                thread.start_new_thread(playSong, ())
+            elif playButton["text"] == "Pause":
+                player.pause()
+                playButton["text"] = "Resume"
+            else:
+                player.play()
+                playButton["text"] = "Pause"
+            
 
         playButton = tk.Button(self, text = "Play", command = play)
-        playButton.pack(side="bottom")
+        playButton.pack(side = "bottom")
+
+        songNameLabel.pack(side="bottom")
+
+        loadButton = tk.Button(self, text = "Load", command = load)
+        loadButton.pack(side="bottom")
         #playButton.grid(row=4, column=0, rowspan = 2, columnspan = 2, sticky = N+S+E+W)
 
         scrollbar = tk.Scrollbar(self, orient="vertical")
