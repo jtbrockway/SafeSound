@@ -8,6 +8,7 @@ import pymongo
 import vlc
 import time
 import thread
+import os
 
 global appP
 global editP
@@ -128,6 +129,7 @@ class appPage(Page):
                 dab.new_song(username, songName)
                 updown.upload(songName, path)
                 songBox.insert(END, songName)
+            os.remove(path)
 
         uploadButton = tk.Button(self, text = "Upload", command = upload)
         uploadButton.pack(side="top", fill = "x", anchor = "w")
@@ -188,6 +190,9 @@ class appPage(Page):
             player.set_media(media)
             songNameLabel["text"] = song + " ready to play"
 
+            #Remove dlc song
+            os.remove(path)
+
         def playSong():
             global player
             global song
@@ -199,6 +204,7 @@ class appPage(Page):
             time.sleep(3)
             duration = player.get_length() / 1000
             mm, ss = divmod(duration, 60)
+            player.set_time(240000)
             while True:
                 state = player.get_state()
                 if state not in playing:
@@ -207,6 +213,11 @@ class appPage(Page):
                     currentTime = player.get_time() / 1000
                     cmm, css = divmod(currentTime, 60)
                     songNameLabel["text"] = "Playing " + song + ". Time: " + "%02d:%02d/%02d:%02d" % (cmm,css,mm,ss)
+                if (duration - (player.get_time()/1000) <= 0):
+                    songNameLabel["text"] = "No Song Playing"
+                    playButton["text"] = "Play"
+                    os.remove("dlmusic/" + "dec" + song + ".mp3")
+                    thread.exit()
                 continue
 
         def play():
