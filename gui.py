@@ -8,7 +8,6 @@ import pymongo
 import vlc
 import time
 import thread
-import threading
 
 global appP
 global editP
@@ -27,7 +26,6 @@ global idolBox
 global pausePressed
 global player
 global song
-global songLock
 
 username = ''
 password = ''
@@ -35,8 +33,6 @@ encKey = ''
 songList = ''
 logged = 0
 pausePressed = True
-
-songLock = threading.Lock()
 
 uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga"
 client = pymongo.MongoClient(uri)
@@ -210,9 +206,7 @@ class appPage(Page):
                 elif not pausePressed:
                     currentTime = player.get_time() / 1000
                     cmm, css = divmod(currentTime, 60)
-                    songLock.acquire()
                     songNameLabel["text"] = "Playing " + song + ". Time: " + "%02d:%02d/%02d:%02d" % (cmm,css,mm,ss)
-                    songLock.release()
                 continue
 
         def play():
@@ -231,10 +225,15 @@ class appPage(Page):
                 player.play()
                 playButton["text"] = "Pause"
 
+            '''
+            This causes race condition that I dont know how to fix 
+            without potentially freezing the GUI randomly
+
+            Suggested is to just leave it out
             if pausePressed:
-                songLock.acquire()
+                acquired = False
                 songNameLabel["text"] = "Paused " + song + "."
-                songLock.release()
+            '''
             
 
         playButton = tk.Button(self, text = "Play", command = play)
