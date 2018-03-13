@@ -204,7 +204,6 @@ class appPage(Page):
             time.sleep(3)
             duration = player.get_length() / 1000
             mm, ss = divmod(duration, 60)
-            player.set_time(240000)
             while True:
                 state = player.get_state()
                 if state not in playing:
@@ -224,9 +223,9 @@ class appPage(Page):
             global pausePressed
             global player
             global song
-
+            
             pausePressed = not pausePressed
-            if playButton["text"] == "Play":
+            if playButton["text"] == "Play" and not songNameLabel["text"] == "No Song Playing":
                 playButton["text"] = "Pause"
                 thread.start_new_thread(playSong, ())
             elif playButton["text"] == "Pause":
