@@ -1,5 +1,5 @@
 import Tkinter as tk
-from Tkinter import * #are these two lines not equivalent?? choose one? :)  -S
+from Tkinter import *
 import tkFileDialog as filedialog
 import encrypt as enc
 import mongodrive2 as dab
@@ -9,6 +9,7 @@ import vlc
 import time
 import thread
 import os
+import threading
 
 global appP
 global editP
@@ -27,6 +28,7 @@ global idolBox
 global pausePressed
 global player
 global song
+global labelLock
 
 username = ''
 password = ''
@@ -34,6 +36,8 @@ encKey = ''
 songList = ''
 logged = 0
 pausePressed = True
+
+labelLock = threading.Lock()
 
 uri = "mongodb://rondell:weasley@ds125198.mlab.com:25198/squaduga"
 client = pymongo.MongoClient(uri)
@@ -212,7 +216,9 @@ class appPage(Page):
 				elif not pausePressed:
 					currentTime = player.get_time() / 1000
 					cmm, css = divmod(currentTime, 60)
+					labelLock.acquire()
 					songNameLabel["text"] = "Playing " + song + ". Time: " + "%02d:%02d/%02d:%02d" % (cmm,css,mm,ss)
+					labelLock.release()
 				if (duration - (player.get_time()/1000) <= 0):
 					songNameLabel["text"] = "No Song Playing"
 					playButton["text"] = "Play"
