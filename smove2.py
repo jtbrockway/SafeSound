@@ -24,7 +24,7 @@ except ImportError:
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/drive-python-quickstart.json
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly','https://www.googleapis.com/auth/drive']
-CLIENT_SECRET_FILE = 'client_secret.json'
+CLIENT_SECRET_FILE = './credentials/client_secret.json'
 APPLICATION_NAME = 'Safe Sound'
 
 
@@ -46,7 +46,7 @@ def get_credentials():
     store = Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
-        print("Creating new credentials...")
+        print("creating new credentials")
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
         if flags:
@@ -57,14 +57,10 @@ def get_credentials():
     return credentials
 
 ##### credentials check run globally #####
-credentials = get_credentials()
-#credentials = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', SCOPES)
-http = credentials.authorize(httplib2.Http())
-service = discovery.build('drive', 'v3', http=http)
 
 DL_PATH = "./dlmusic/"
 UL_PATH = "./ulmusic/"
-UL_FOLDER = "1sd_Xt-sgMO6uNz8janaTco078D8H20ZP"
+#UL_FOLDER = "1sd_Xt-sgMO6uNz8janaTco078D8H20ZP"
 
 ### WHEN FINALIZED, WILL NEED TO MOVE TO DIFFERENT DRIVE ACCOUNT AND TAKE OUT THE PARENT CHECKS. ###
 
@@ -80,7 +76,7 @@ def download(song_name, dl_path):
     #file_id = '0BwwA4oUTeiV1UVNwOHItT0xfa2M'
     print("======================= DOWNLOAD ===========================")
     file_id = ''
-    results = service.files().list(fields="nextPageToken, files(id, name, parents)").execute()
+    results = service.files().list(fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
     if not items:
         print('No files found.')
@@ -108,7 +104,7 @@ def download(song_name, dl_path):
         status, done = downloader.next_chunk()
         print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\bDownload progress             : %d%%." % int(status.progress() * 100), end='')
 
-    results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, parents)").execute()
+    results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
     if not items:
         print('No files found.')
@@ -153,7 +149,7 @@ def upload(song_name, file_name_path):
     print('Done.')
 
     
-    results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, parents)").execute()
+    results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
     if not items:
         print('No files found.')
@@ -171,7 +167,11 @@ def upload(song_name, file_name_path):
 
 #### USE MAIN FOR TESTING, PLEASE ####
 def main(): 
-    results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, parents)").execute()
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('drive', 'v3', http=http)
+
+    results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
     if not items:
         print('No files found.')
@@ -183,9 +183,9 @@ def main():
                     print('{0:24} || {1}'.format(item['id'],item['name']))
             except KeyError:
                 continue
-    upload('test_song','ulmusic/test_song.txt')
-    upload('ConspiracyTheory','ulmusic/ConspiracyTheory.mp3')
-    download('ConspiracyTheory', DL_PATH)
+    # upload('test_song2','ulmusic/test_song.txt')
+    # upload('ConspiracyTheory','ulmusic/ConspiracyTheory.mp3')
+    # download('ConspiracyTheory', DL_PATH)
     return
 
 if __name__ == '__main__':
