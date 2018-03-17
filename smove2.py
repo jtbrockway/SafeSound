@@ -41,7 +41,7 @@ def get_credentials():
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
-                                   'client_secret.json')
+                                   'drive_secret.json')
     print("Checking credentials...")
     store = Storage(credential_path)
     credentials = store.get()
@@ -112,8 +112,8 @@ def download(song_name, dl_path):
         print('\nFiles after download completed:')
         for item in items:
             try:
-                if UL_FOLDER in item['parents']:
-                    print('{0:24} || {1}'.format(item['id'],item['name']))
+                #if UL_FOLDER in item['parents']:
+                print('{0:24} || {1}'.format(item['id'],item['name']))
             except KeyError:
                 continue
     print()
@@ -127,8 +127,8 @@ def upload(song_name, file_name_path):
     """
     print("======================== UPLOAD ============================")
     print("New upload. Looking for duplicates...")
-    file_metadata = {'name': song_name,
-                    'parents':[UL_FOLDER]
+    file_metadata = {'name': song_name
+                    #'parents':[UL_FOLDER]
     }
     results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
@@ -157,19 +157,20 @@ def upload(song_name, file_name_path):
         print('Files after upload:')
         for item in items:
             try:
-                if UL_FOLDER in item['parents']:
-                    print('{0:24} || {1}'.format(item['id'],item['name']))
+                #if UL_FOLDER in item['parents']:
+                print('{0:24} || {1}'.format(item['id'],item['name']))
             except KeyError:
                 continue
     print()
     return
 
+credentials = get_credentials()
+http = credentials.authorize(httplib2.Http())
+service = discovery.build('drive', 'v3', http=http)
 
 #### USE MAIN FOR TESTING, PLEASE ####
 def main(): 
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('drive', 'v3', http=http)
+    
 
     results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
@@ -179,8 +180,8 @@ def main():
         print('Songs in the bank:')
         for item in items:
             try:
-                if UL_FOLDER in item['parents']:
-                    print('{0:24} || {1}'.format(item['id'],item['name']))
+                #if UL_FOLDER in item['parents']:
+                print('{0:24} || {1}'.format(item['id'],item['name']))
             except KeyError:
                 continue
     # upload('test_song2','ulmusic/test_song.txt')
